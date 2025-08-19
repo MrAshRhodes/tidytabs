@@ -53,6 +53,7 @@ These services process the data according to their own privacy policies and term
 ## Data Sharing
 
 We DO NOT:
+
 - Sell your data to third parties
 - Share your data with advertisers
 - Track you across websites
@@ -64,6 +65,7 @@ Data is only transmitted to the AI provider you explicitly choose when you run t
 ## Your Choices and Controls
 
 You can:
+
 - Delete all data: Clear Chrome extension storage from Chrome settings
 - Disable the extension: Turn off or uninstall TidyTabs at any time
 - Use without AI: Select Last Access or Frequency algorithms that work entirely offline
@@ -86,6 +88,7 @@ We may update this privacy policy from time to time. Check the Effective Date at
 ## Contact
 
 For questions about this privacy policy or the Extension:
+
 - Create an issue on our GitHub repository
 
 ## Consent
@@ -95,6 +98,7 @@ By using TidyTabs, you consent to this privacy policy and agree to its terms.
 ---
 
 Important:
+
 - Tab titles and URLs are only sent to an AI provider when you explicitly use the Category (AI) algorithm
 - Groq Free Tier does not require you to provide an API key, but requests will still be sent to Groq when you trigger Category mode
 - Last Access and Frequency algorithms run entirely on your device and do not send tab data to any external service
