@@ -144,7 +144,7 @@ Goal: keep the GitHub repo free of secrets, while local builds include an embedd
 
 What’s already set up:
 
-- The provider lazily loads an optional local key module at runtime via dynamic import in [src/llm/providers/GroqProvider.js](src/llm/providers/GroqProvider.js:142).
+- The provider statically imports an optional local key module (MV3 service worker forbids dynamic import) at [src/llm/providers/GroqProvider.js import](src/llm/providers/GroqProvider.js:7) and uses it in [_ensureKey()](src/llm/providers/GroqProvider.js:145).
 - A template lives at [src/llm/providers/GroqKey.example.js](src/llm/providers/GroqKey.example.js:1).
 - Your real local key file is ignored by Git at [.gitignore](.gitignore:153).
 
@@ -178,7 +178,7 @@ Security notes:
 Troubleshooting:
 
 - If Category (AI) mode reports missing key on Groq, ensure you created src/llm/providers/GroqKey.js from the example and pasted a valid base64-encoded value.
-- Verify the dynamic import path matches the file (see [src/llm/providers/GroqProvider.js](src/llm/providers/GroqProvider.js:142)).
+- Verify the static import is present and the file exists (see [src/llm/providers/GroqProvider.js import](src/llm/providers/GroqProvider.js:7) and [_ensureKey()](src/llm/providers/GroqProvider.js:145)).
 
 ## Architecture Overview
 

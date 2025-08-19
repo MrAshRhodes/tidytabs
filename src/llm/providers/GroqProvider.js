@@ -5,6 +5,7 @@
  */
 
 import { promptForCategorization } from "../PromptTemplates.js";
+import { EMBEDDED_KEY_B64 } from "./GroqKey.js";
 
 // Enable debug logging for Groq provider
 const DEBUG = true;
@@ -144,26 +145,32 @@ export default class GroqProvider {
   async _ensureKey() {
     if (this._hasKey) return;
 
+    // If a user key was provided at construction, nothing else to do
+    if (this._usingUserKey && this._key) {
+      this._hasKey = true;
+      return;
+    }
+
+    // Use statically imported embedded key (MV3 service worker disallows dynamic import())
     try {
-      const mod = await import("./GroqKey.js");
-      const b64 = mod?.EMBEDDED_KEY_B64;
-      if (b64 && typeof b64 === "string" && b64.length > 0) {
+      const b64 = typeof EMBEDDED_KEY_B64 === "string" ? EMBEDDED_KEY_B64 : "";
+      if (b64 && b64.length > 0) {
         try {
           this._embeddedKey = atob(b64);
           if (!this._usingUserKey) {
             this._key = this._embeddedKey;
           }
           this._hasKey = !!this._embeddedKey;
-          safeLog("Loaded embedded Groq key from local GroqKey.js");
+          safeLog("Loaded embedded Groq key via static import");
         } catch (err) {
-          safeLog("Failed to decode embedded base64 key:", err);
+          safeLog("Failed to decode embedded base64 key:", err?.message || err);
         }
       } else {
         safeLog("GroqKey.js present but EMBEDDED_KEY_B64 is empty");
       }
     } catch (e) {
-      // Module not found or failed to load - no embedded key available
-      safeLog("GroqKey.js not found - proceeding without embedded key");
+      // If GroqKey.js is missing, the static import would fail at load time.
+      safeLog("No embedded key available via static import");
     }
   }
 
@@ -173,7 +180,13 @@ export default class GroqProvider {
   async categorizeTabBatch(tabs = [], _options = {}) {
     // Ensure we have a key (user or embedded)
     await this._ensureKey();
+    safeLog("Key status", {
+      usingUserKey: this._usingUserKey,
+      hasKey: this._hasKey,
+      embeddedAvailable: !!this._embeddedKey,
+    });
     if (!this._hasKey) {
+      safeLog("No API key available after _ensureKey; aborting");
       throw new Error("API key configuration error");
     }
 
@@ -225,6 +238,12 @@ export default class GroqProvider {
 
     // Helper function to make the API call
     const makeApiCall = async (apiKey) => {
+      safeLog("HTTP request", {
+        endpoint: url,
+        model: this.model,
+        batchSize: withDomain.length,
+        using: this._usingUserKey ? "user" : "embedded",
+      });
       const res = await fetch(url, {
         method: "POST",
         headers: {
@@ -242,6 +261,7 @@ export default class GroqProvider {
         return { ok: false, status: res.status, error: msg, data };
       }
 
+      safeLog("HTTP ok status:", res.status);
       return { ok: true, data };
     };
 
