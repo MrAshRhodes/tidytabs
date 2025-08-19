@@ -1,6 +1,6 @@
 # Privacy Policy for TidyTabs
 
-**Effective Date: January 14, 2025**
+**Effective Date: August 19, 2025**
 
 ## Overview
 
