@@ -1,0 +1,156 @@
+# Private planning and documentation
+plan/
+ai-docs/
+old-versions/
+
+# Test files
+test-*.html
+test*.html
+
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build outputs
+dist/
+build/
+*.zip
+*.crx
+*.pem
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+*.sublime-project
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+
+# Logs
+logs/
+*.log
+lerna-debug.log*
+
+# Design source files
+*.psd
+*.ai
+*.sketch
+*.fig
+*.xd
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+.tmp/
+
+# Debug and coverage
+coverage/
+.nyc_output/
+*.lcov
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# dotenv environment variables file
+.env.test
+
+# parcel-bundler cache
+.cache
+.parcel-cache
+
+# Next.js build output
+.next
+out
+
+# Nuxt.js build / generate output
+.nuxt
+
+# Gatsby files
+.cache/
+
+# VuePress build output
+.vuepress/dist
+
+# Serverless directories
+.serverless/
+
+# FuseBox cache
+.fusebox/
+
+# DynamoDB Local files
+.dynamodb/
+
+# TernJS port file
+.tern-port
+
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test
+
+# yarn v2
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# Private keys and certificates
+*.key
+*.cert
+*.crt
+*.pem
+private/
+secrets/
+
+# Backup files
+*.backup
+*.bak
+*.old
+
+# Lock files (optional - uncomment if you don't want to track them)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+# Ignore local embedded Groq key used only for local builds (never commit this)
+src/llm/providers/GroqKey.js
+# Kilo Code working state (do not commit memory bank)
+.kilocode/

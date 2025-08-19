@@ -1,0 +1,22 @@
+# Build outputs
+dist/
+build/
+
+# Old versions
+old-versions/
+
+# Documentation
+plan/
+ai-docs/
+
+# Test files
+test-*.html
+
+# Dependencies
+node_modules/
+
+# OS files
+.DS_Store
+
+# Design files
+*.psd

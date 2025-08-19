@@ -1,6 +1,7 @@
 # TidyTabs — Chrome Extension
 
 AI-powered Chrome extension that intelligently organizes your tabs by:
+
 - Category (LLM/AI using your custom categories)
 - Last Access (time-based buckets)
 - Frequency (usage patterns with recency weighting)
@@ -32,6 +33,7 @@ Modern UI with a design system, glassmorphism touches, and light/dark/auto theme
 - Icons ready for Chrome Web Store listing
 
 For full details, see:
+
 - Providers and prompts: [src/llm/LLMProvider.js](src/llm/LLMProvider.js:1), [src/llm/PromptTemplates.js](src/llm/PromptTemplates.js:1)
 - Algorithms: [src/algorithms/CategoryAlgorithm.js](src/algorithms/CategoryAlgorithm.js:1), [src/algorithms/LastAccessAlgorithm.js](src/algorithms/LastAccessAlgorithm.js:1), [src/algorithms/FrequencyAlgorithm.js](src/algorithms/FrequencyAlgorithm.js:1)
 - Settings and groups: [src/core/SettingsManager.js](src/core/SettingsManager.js:1), [src/core/TabGroupManager.js](src/core/TabGroupManager.js:1), [src/core/TabOrganizer.js](src/core/TabOrganizer.js:1)
@@ -39,6 +41,7 @@ For full details, see:
 ## Installation
 
 Load Unpacked (development):
+
 1. Open Chrome and navigate to chrome://extensions
 2. Enable Developer mode
 3. Click Load unpacked
@@ -56,55 +59,58 @@ Install from Chrome Web Store (coming soon)
 3. Click Organize Tabs Now
 
 Auto Mode:
+
 - Toggle on to automatically organize when new tabs are created or updated (with sensible debouncing)
 
 Ungroup before recategorize (optional):
+
 - In the popup, you can enable Ungroup all tabs first before recategorizing
 - When enabled, all existing groups are cleared before AI recategorization for a completely fresh result
 - The toggle state persists in Chrome storage
 
 ## Custom Categories
 
-Define your categories in Options:
-- Add up to 24 categories with names, colors, and optional icons
-- Drag and drop to reorder; AI prioritizes higher-ranked categories
-- Validation: Names 2–30 characters, alphanumeric with spaces/hyphens
-- Colors: 9 Chrome group colors (grey, blue, red, yellow, green, pink, purple, cyan, orange)
-- When a category is deleted, TidyTabs will recategorize affected tabs
+Note: Custom categories are not yet implemented - currently uses built-in AI categorization.
 
 Implementation references:
+
 - [src/core/CustomCategoryManager.js](src/core/CustomCategoryManager.js:1)
 - [src/constants/categories.js](src/constants/categories.js:1)
 
 ## AI Providers
 
 Default: Groq (Free Tier)
+
 - Works out of the box without an API key
 - Rate limits (typical): 10 requests/min, 100/hour, 500/day
 
 Bring your own key:
+
 - OpenAI (default model: gpt-5-mini)
 - Anthropic (default model: claude-sonnet-4-20250514)
 
 Behavior:
+
 - AI strictly uses your custom categories; no invented categories
 - If uncertain, tabs fall back to Uncategorized
 - Confidence-based caching reduces unnecessary re-calls
 - No domain-based fallback (AI-first policy)
 
 Technical references:
+
 - [src/llm/providers/GroqProvider.js](src/llm/providers/GroqProvider.js:1)
 - [src/llm/providers/OpenAIProvider.js](src/llm/providers/OpenAIProvider.js:1)
 - [src/llm/providers/AnthropicProvider.js](src/llm/providers/AnthropicProvider.js:1)
 
 ## Settings
 
-Open the Options page (from the popup, or chrome://extensions → Details → Extension options):
+Access all settings through the popup interface (click the gear icon):
+
 - AI Provider: Groq (default), OpenAI, or Anthropic
 - Default Algorithm: Category (AI), Last Access, Frequency
 - Auto Mode: On/off with debouncing
 - Theme: Auto, Light, or Dark (applied immediately)
-- Custom Categories: Add/edit/delete/reorder
+- UI Style: Glass or Solid with preset options
 - API Keys: Stored locally with base64 obfuscation
 
 ## Privacy Summary
@@ -119,9 +125,11 @@ Read the full policy: [PRIVACY_POLICY.md](PRIVACY_POLICY.md)
 ## Development
 
 Install dev tools locally (optional):
+
 - ESLint and Prettier are provided for formatting and linting
 
 Scripts:
+
 - npm run clean — remove dist/ and re-create the folder
 - npm run format — Prettier format all files
 - npm run lint — ESLint check (.js files)
@@ -130,11 +138,52 @@ Scripts:
 
 Build artifacts are generated into dist/.
 
+## Local embedded Groq key for builds (no secrets in Git)
+
+Goal: keep the GitHub repo free of secrets, while local builds include an embedded Groq API key for the free-tier UX.
+
+What’s already set up:
+
+- The provider lazily loads an optional local key module at runtime via dynamic import in [src/llm/providers/GroqProvider.js](src/llm/providers/GroqProvider.js:142).
+- A template lives at [src/llm/providers/GroqKey.example.js](src/llm/providers/GroqKey.example.js:1).
+- Your real local key file is ignored by Git at [.gitignore](.gitignore:153).
+
+How to enable the embedded key locally:
+
+1. Create your local key file from the template:
+   cp src/llm/providers/GroqKey.example.js src/llm/providers/GroqKey.js
+
+2. Base64-encode your Groq API key (starts with gsk\_...):
+   echo -n "gsk_your_actual_key_here" | base64
+
+3. Open src/llm/providers/GroqKey.js and replace the placeholder value:
+   export const EMBEDDED_KEY_B64 = "PASTE_YOUR_BASE64_VALUE_HERE";
+
+4. Build the extension:
+   npm run build
+   - The produced zip in dist/ will include src/, and therefore your local GroqKey.js, enabling the built-in free-tier behavior.
+
+Behavior and precedence:
+
+- If you set a personal Groq key in the Options page (Settings), that user key is used first.
+- If a user key is invalid (e.g., 401), the provider will fall back to the embedded key when available.
+- If no user key is provided, the embedded key is used automatically (when present).
+
+Security notes:
+
+- Do not commit src/llm/providers/GroqKey.js. It is ignored by Git via [.gitignore](.gitignore:153).
+- Public repositories must never contain real API keys.
+- Optional hardening: run a secret scanner in CI (e.g., Gitleaks) to prevent accidental key commits.
+
+Troubleshooting:
+
+- If Category (AI) mode reports missing key on Groq, ensure you created src/llm/providers/GroqKey.js from the example and pasted a valid base64-encoded value.
+- Verify the dynamic import path matches the file (see [src/llm/providers/GroqProvider.js](src/llm/providers/GroqProvider.js:142)).
+
 ## Architecture Overview
 
 - Manifest V3 with a service worker coordinating tab events and messaging
-- Popup (action) for manual organization controls
-- Options page for providers, algorithms, auto-mode, theme, API keys
+- Popup interface for both organization controls and all settings
 - Core modules:
   - Settings Manager: persistence with defaults and validation
   - Tab Organizer: orchestrates algorithms and creates tab groups
@@ -144,9 +193,9 @@ Build artifacts are generated into dist/.
 - Design system CSS and components with modern tokens and animations
 
 Key files:
+
 - Service worker: [src/service-worker/background.js](src/service-worker/background.js:1)
 - Organizer and groups: [src/core/TabOrganizer.js](src/core/TabOrganizer.js:1), [src/core/TabGroupManager.js](src/core/TabGroupManager.js:1)
-- Options UI: [options/options.html](options/options.html:1), [options/options.js](options/options.js:1), [options/options.css](options/options.css:1)
 - Popup UI: [popup/popup.html](popup/popup.html:1), [popup/popup.js](popup/popup.js:1), [popup/popup.css](popup/popup.css:1)
 
 ## Roadmap

@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>TidyTabs — Popup</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Shared design system -->
+    <link rel="stylesheet" href="../src/styles/design-system.css" />
+    <link rel="stylesheet" href="../src/styles/components.css" />
+    <link rel="stylesheet" href="../src/styles/animations.css" />
+    <!-- Popup local styles -->
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main
+      class="popup-container fade-in"
+      role="main"
+      aria-label="TidyTabs popup"
+      data-view="main"
+    >
+      <header class="header card-elevated glass-card">
+        <div class="header-top">
+          <div class="brand-row">
+            <img
+              src="../icons/icon512.png"
+              alt="TidyTabs logo"
+              class="brand-icon"
+            />
+            <h1 class="title">TidyTabs</h1>
+          </div>
+          <button
+            id="themeToggleIcon"
+            class="icon-btn theme-icon-btn"
+            type="button"
+            aria-label="Toggle theme"
+            title="Toggle theme"
+          >
+            <span id="themeIconSun" class="theme-emoji" style="display: block"
+              >☀️</span
+            >
+            <span id="themeIconMoon" class="theme-emoji" style="display: none"
+              >🌙</span
+            >
+          </button>
+        </div>
+        <div class="header-bottom">
+          <div class="header-status-section">
+            <div
+              id="statusDisplay"
+              class="status-indicator"
+              role="status"
+              aria-live="polite"
+              data-tooltip="Indicates the status of the last organization:
+• Success: Shows checkmark ✓ and time taken
+• In Progress: Shows 'Organizing...'
+• Error: Shows error message
+• No Provider: Shows warning to configure API"
+            >
+              <span id="statusText" class="status-text"></span>
+            </div>
+            <div
+              id="apiKeyStatusChip"
+              class="status-chip"
+              aria-label="API key status"
+              role="status"
+            ></div>
+          </div>
+          <button
+            id="settingsBtn"
+            class="icon-btn"
+            type="button"
+            aria-label="Settings"
+            title="Settings"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path
+                fill="currentColor"
+                d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"
+              />
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <section class="controls">
+        <label
+          class="toggle"
+          data-tooltip="When enabled, tabs are automatically organized as you create new ones (with a 30-second cooldown between organizations)"
+        >
+          <input type="checkbox" id="autoModeToggle" />
+          <span class="toggle-label">Auto Mode</span>
+          <span class="info-icon">?</span>
+        </label>
+      </section>
+
+      <section class="actions">
+        <button
+          id="organizeBtn"
+          class="btn btn-primary hover-lift"
+          aria-live="off"
+        >
+          <span>Organize Tabs Now</span>
+          <span class="shortcut-hint" id="organizeShortcutHint"
+            >Ctrl+Shift+O</span
+          >
+        </button>
+        <button
+          id="toggleGroupsBtn"
+          class="btn btn-secondary hover-lift"
+          aria-live="off"
+        >
+          <span id="toggleGroupsText">Toggle All Groups</span>
+          <span class="shortcut-hint" id="toggleShortcutHint"
+            >Ctrl+Shift+U</span
+          >
+        </button>
+        <button
+          id="recategorizeBtn"
+          class="btn btn-secondary hover-lift btn-left"
+          aria-live="off"
+          title="Clear AI cache and reorganize tabs with fresh categorization"
+        >
+          <span>Recategorize</span>
+          <svg
+            class="refresh-icon"
+            viewBox="0 0 24 24"
+            width="14"
+            height="14"
+            aria-hidden="true"
+            focusable="false"
+            style="margin-left: 4px"
+          >
+            <path
+              fill="currentColor"
+              d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"
+            />
+          </svg>
+        </button>
+        <label
+          class="recategorize-option"
+          data-tooltip="When enabled, removes all existing tab groups before recategorizing"
+        >
+          <input type="checkbox" id="ungroupBeforeRecategorize" />
+          <span class="option-label">Ungroup all tabs first</span>
+        </label>
+      </section>
+
+      <footer class="support-section">
+        <button
+          id="buyMeCoffeeBtn"
+          class="btn btn-support"
+          aria-label="Support development - Buy me a coffee"
+        >
+          <svg
+            class="coffee-icon"
+            viewBox="0 0 24 24"
+            width="16"
+            height="16"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path
+              fill="currentColor"
+              d="M2 21h18v-2H2v2zm18-11c0-3.25-2.75-6-6-6h-4c-3.25 0-6 2.75-6 6v5h16v-5zm-2 3H6V10c0-2.22 1.78-4 4-4h4c2.22 0 4 1.78 4 4v3zm2-5h2c1.11 0 2 .89 2 2v3c0 1.11-.89 2-2 2h-2v-7z"
+            />
+          </svg>
+          <span>Buy me a coffee</span>
+        </button>
+      </footer>
+
+      <section
+        id="settingsView"
+        class="settings-view card card-elevated glass-card"
+        aria-hidden="true"
+        hidden
+      >
+        <div class="settings-header">
+          <button
+            id="backFromSettingsBtn"
+            class="icon-btn"
+            type="button"
+            aria-label="Back"
+            title="Back"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path
+                fill="currentColor"
+                d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"
+              />
+            </svg>
+          </button>
+          <h2 class="section-title">Settings</h2>
+        </div>
+
+        <div class="settings-content">
+          <fieldset class="field">
+            <legend class="section-title">AI Provider</legend>
+            <div
+              class="algo-options"
+              role="radiogroup"
+              aria-label="AI Provider"
+            >
+              <label
+                class="radio-card hover-lift"
+                role="radio"
+                aria-checked="false"
+                tabindex="0"
+                for="prov-groq"
+              >
+                <input
+                  type="radio"
+                  name="provider"
+                  value="groq"
+                  id="prov-groq"
+                />
+                <div class="radio-content">
+                  <span class="radio-title">Groq (Free)</span>
+                  <span class="radio-model">llama-3.1-8b-instant</span>
+                </div>
+              </label>
+              <label
+                class="radio-card hover-lift"
+                role="radio"
+                aria-checked="false"
+                tabindex="-1"
+                for="prov-openai"
+              >
+                <input
+                  type="radio"
+                  name="provider"
+                  value="openai"
+                  id="prov-openai"
+                />
+                <div class="radio-content">
+                  <span class="radio-title">OpenAI</span>
+                  <span class="radio-model">gpt-5-mini</span>
+                </div>
+              </label>
+              <label
+                class="radio-card hover-lift"
+                role="radio"
+                aria-checked="false"
+                tabindex="-1"
+                for="prov-anthropic"
+              >
+                <input
+                  type="radio"
+                  name="provider"
+                  value="anthropic"
+                  id="prov-anthropic"
+                />
+                <div class="radio-content">
+                  <span class="radio-title">Anthropic</span>
+                  <span class="radio-model">claude-sonnet-4-20250514</span>
+                </div>
+              </label>
+            </div>
+          </fieldset>
+
+          <div class="field">
+            <label for="apiKeyInput" class="section-title">API Key</label>
+            <div class="input-with-actions">
+              <input
+                id="apiKeyInput"
+                type="password"
+                placeholder="Enter API key"
+                autocomplete="off"
+              />
+              <button
+                id="toggleApiKeyVisibility"
+                class="icon-btn"
+                type="button"
+                aria-label="Reveal API key"
+                title="Reveal/Hide"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <path
+                    fill="currentColor"
+                    d="M12 6c-5 0-9 6-9 6s4 6 9 6 9-6 9-6-4-6-9-6Zm0 10a4 4 0 1 1 .001-8.001A4 4 0 0 1 12 16Zm10 3.27-2.12-2.12-1.41 1.41L20.59 20l1.41-1.41ZM3.53 4.47 2.12 5.88 5.1 8.86 6.51 7.45 3.53 4.47Z"
+                  />
+                </svg>
+              </button>
+              <button
+                id="clearApiKeyBtn"
+                class="icon-btn"
+                type="button"
+                aria-label="Clear API key"
+                title="Clear key"
+                hidden
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <path
+                    fill="currentColor"
+                    d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+                  />
+                </svg>
+              </button>
+              <button
+                id="testConnectionBtn"
+                class="btn btn-ghost"
+                type="button"
+              >
+                Test
+              </button>
+            </div>
+            <div
+              id="apiKeyHelperText"
+              class="helper-text"
+              aria-live="polite"
+            ></div>
+            <div
+              id="connectionStatus"
+              class="status-text"
+              aria-live="polite"
+              aria-atomic="true"
+            ></div>
+          </div>
+
+          <div class="field">
+            <label for="themeSelect" class="section-title">Theme</label>
+            <select id="themeSelect">
+              <option value="auto">Auto</option>
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="uiStyleSelect" class="section-title">UI Style</label>
+            <select id="uiStyleSelect">
+              <option value="glass">Glass (Frosted)</option>
+              <option value="solid">Solid</option>
+            </select>
+          </div>
+
+          <div class="field" id="glassPresetRow">
+            <label for="glassPresetSelect" class="section-title"
+              >Glass Preset</label
+            >
+            <select id="glassPresetSelect">
+              <option value="default-frosted">Default Frosted</option>
+              <option value="aurora-blue">Aurora Blue</option>
+              <option value="mint-glow">Mint Glow</option>
+              <option value="dark-frost">Dark Frost</option>
+            </select>
+            <div class="helper-text">
+              When Theme = Auto: Default Frosted in Light and Dark Frost in
+              Dark.
+            </div>
+          </div>
+
+          <fieldset class="field">
+            <legend class="section-title">Default Algorithm</legend>
+            <div
+              class="algo-options"
+              role="radiogroup"
+              aria-label="Default Algorithm"
+            >
+              <label
+                class="radio-card hover-lift"
+                role="radio"
+                aria-checked="false"
+                tabindex="0"
+                for="defalgo-category"
+              >
+                <input
+                  type="radio"
+                  name="defaultAlgorithm"
+                  value="category"
+                  id="defalgo-category"
+                />
+                <span class="radio-title">Category (AI)</span>
+              </label>
+              <label
+                class="radio-card hover-lift"
+                role="radio"
+                aria-checked="false"
+                tabindex="-1"
+                for="defalgo-lastaccess"
+              >
+                <input
+                  type="radio"
+                  name="defaultAlgorithm"
+                  value="lastAccess"
+                  id="defalgo-lastaccess"
+                />
+                <span class="radio-title">Last Access</span>
+              </label>
+              <label
+                class="radio-card hover-lift"
+                role="radio"
+                aria-checked="false"
+                tabindex="-1"
+                for="defalgo-frequency"
+              >
+                <input
+                  type="radio"
+                  name="defaultAlgorithm"
+                  value="frequency"
+                  id="defalgo-frequency"
+                />
+                <span class="radio-title">Frequency</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <div class="field">
+            <label
+              class="toggle"
+              data-tooltip="When enabled, tabs are automatically organized as you create new ones (with a 30-second cooldown between organizations)"
+            >
+              <input type="checkbox" id="autoModeToggleSettings" />
+              <span class="toggle-label">Auto Mode</span>
+              <span class="info-icon">?</span>
+            </label>
+          </div>
+
+          <div class="field about-section">
+            <h3 class="section-title">About TidyTabs</h3>
+            <div class="about-content">
+              <p class="about-version" id="versionDisplay">Version 0.1.0</p>
+              <p class="about-description">
+                AI-powered tab organization for Chrome
+              </p>
+              <p class="about-attribution">
+                <a
+                  href="https://www.flaticon.com/free-icons/cog"
+                  title="cog icons"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Icon created by Freepik - Flaticon
+                </a>
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>
