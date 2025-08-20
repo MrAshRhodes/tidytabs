@@ -2,7 +2,7 @@
 
 AI-powered Chrome extension that intelligently organizes your tabs by:
 
-- Category (LLM/AI using your custom categories)
+- Category (LLM/AI semantic grouping)
 - Last Access (time-based buckets)
 - Frequency (usage patterns with recency weighting)
 
@@ -12,11 +12,11 @@ Modern UI with a design system, glassmorphism touches, and light/dark/auto theme
 
 - Organize tabs on-demand from the popup or automatically via Auto Mode
 - Three organization methods
-  - Category: AI-powered grouping with your custom categories
+  - Category: AI-powered semantic grouping
   - Last Access: Groups like Just Now, Recent, Earlier Today, Yesterday, This Week, Older
   - Frequency: Most Used, Frequently Accessed, Occasionally Used, Rarely Used
-- Groq Free Tier by default (no API key required). Optional OpenAI or Anthropic for your own keys
-- AI-first policy: Only uses your defined categories. If AI cannot confidently match, tabs go to Uncategorized
+- Groq provider supported. In this public repo, you must provide a Groq API key (via Settings) or add a local embedded key; see the GroqKey section below. OpenAI and Anthropic are bring-your-own-key.
+- AI-first policy: Uses strict prompts to avoid invented categories. If AI cannot confidently match, tabs go to Uncategorized
 - Duplicate group prevention and category consolidation
 - Beautiful design system, smooth micro-interactions, dark/light/auto themes
 - Privacy-focused: data stored locally in your browser; only AI API calls are made when you use Category mode
@@ -24,11 +24,11 @@ Modern UI with a design system, glassmorphism touches, and light/dark/auto theme
 ## Current Status
 
 - Production-ready with real AI provider integrations:
-  - Groq Free Tier (default, no setup required)
+  - Groq supported (default provider). In this repo, provide a key or add a local embedded key; see below.
   - OpenAI (bring your own key; default model: gpt-5-mini)
   - Anthropic (bring your own key; default model: claude-sonnet-4-20250514)
 - Smart batching, rate limiting, error handling, and confidence-based caching
-- Options page supports provider selection, API keys, custom categories, theme, defaults
+- Options page supports provider selection, API keys, theme, defaults
 - Popup provides quick organize, algorithm switching, and Auto Mode toggle
 - Icons ready for Chrome Web Store listing
 
@@ -70,19 +70,24 @@ Ungroup before recategorize (optional):
 
 ## Custom Categories
 
-Note: Custom categories are not yet implemented - currently uses built-in AI categorization.
+Not yet implemented:
+- The codebase includes scaffolding, but the feature is not enabled in the UI.
+- This section will be updated when the feature is released.
 
-Implementation references:
-
+References (development scaffolding):
 - [src/core/CustomCategoryManager.js](src/core/CustomCategoryManager.js:1)
+- [src/llm/PromptTemplates.js](src/llm/PromptTemplates.js:1)
 - [src/constants/categories.js](src/constants/categories.js:1)
 
 ## AI Providers
 
-Default: Groq (Free Tier)
+Default: Groq
 
-- Works out of the box without an API key
-- Rate limits (typical): 10 requests/min, 100/hour, 500/day
+- In this public repo, Groq requires either:
+  - a personal API key saved in Settings, or
+  - a local embedded key via the GroqKey setup in [README.md](README.md:147)
+- Free-tier limits (typical): 10 requests/min, 100/hour, 500/day
+- Model: llama-3.1-8b-instant
 
 Bring your own key:
 
@@ -91,7 +96,7 @@ Bring your own key:
 
 Behavior:
 
-- AI strictly uses your custom categories; no invented categories
+- Strict prompts help avoid invented categories
 - If uncertain, tabs fall back to Uncategorized
 - Confidence-based caching reduces unnecessary re-calls
 - No domain-based fallback (AI-first policy)
@@ -144,7 +149,7 @@ Goal: keep the GitHub repo free of secrets, while local builds include an embedd
 
 What’s already set up:
 
-- The provider statically imports an optional local key module (MV3 service worker forbids dynamic import) at [src/llm/providers/GroqProvider.js import](src/llm/providers/GroqProvider.js:7) and uses it in [_ensureKey()](src/llm/providers/GroqProvider.js:145).
+- The provider statically imports an optional local key module (MV3 service worker forbids dynamic import) at [src/llm/providers/GroqProvider.js import](src/llm/providers/GroqProvider.js:8) and uses it in [_ensureKey()](src/llm/providers/GroqProvider.js:145).
 - A template lives at [src/llm/providers/GroqKey.example.js](src/llm/providers/GroqKey.example.js:1).
 - Your real local key file is ignored by Git at [.gitignore](.gitignore:153).
 
@@ -168,6 +173,7 @@ Behavior and precedence:
 - If you set a personal Groq key in the Options page (Settings), that user key is used first.
 - If a user key is invalid (e.g., 401), the provider will fall back to the embedded key when available.
 - If no user key is provided, the embedded key is used automatically (when present).
+- Connection tests: testConnection intentionally does not fall back on 401 for user keys; it returns "Invalid user API key (401)". Fallback to the embedded key applies only during categorize operations.
 
 Security notes:
 
@@ -178,7 +184,8 @@ Security notes:
 Troubleshooting:
 
 - If Category (AI) mode reports missing key on Groq, ensure you created src/llm/providers/GroqKey.js from the example and pasted a valid base64-encoded value.
-- Verify the static import is present and the file exists (see [src/llm/providers/GroqProvider.js import](src/llm/providers/GroqProvider.js:7) and [_ensureKey()](src/llm/providers/GroqProvider.js:145)).
+- Verify the static import is present and the file exists (see [src/llm/providers/GroqProvider.js import](src/llm/providers/GroqProvider.js:8) and [_ensureKey()](src/llm/providers/GroqProvider.js:145)).
+- If Test Connection shows "Invalid user API key (401)" but categorization works, this is expected: testConnection avoids fallback to inform you the user key is invalid. Fix by updating or clearing the Groq key in Settings.
 
 ## Architecture Overview
 
