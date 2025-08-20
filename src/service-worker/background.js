@@ -817,8 +817,41 @@ async function handleOrganizeTabs(
 }
 
 /**
+ * Check if existing tab groups have generic names that indicate poor categorization
+ */
+async function hasGenericGroups() {
+  try {
+    const tabGroups = await chrome.tabGroups.query({});
+    const genericNames = [
+      'work', 'general', 'other', 'miscellaneous', 'misc', 'uncategorized',
+      'tabs', 'new', 'temp', 'temporary', 'random', 'stuff', 'various',
+      'mixed', 'documents', 'files', 'links', 'websites'
+    ];
+    
+    for (const group of tabGroups) {
+      const groupName = group.title?.toLowerCase().trim();
+      if (groupName && genericNames.includes(groupName)) {
+        debugLog("[ATO Background] Found generic group:", group.title);
+        return true;
+      }
+      
+      // Also check for very short single-word names that might be generic
+      if (groupName && groupName.length <= 4 && /^[a-z]+$/.test(groupName)) {
+        debugLog("[ATO Background] Found potentially generic short group:", group.title);
+        return true;
+      }
+    }
+    
+    return false;
+  } catch (error) {
+    debugLog("[ATO Background] Error checking for generic groups:", error);
+    return false; // Default to not including grouped tabs if we can't determine
+  }
+}
+
+/**
  * Schedule auto-organization with a short debounce (300ms) to coalesce bursts of tab creation.
- * Checks autoMode before triggering.
+ * Checks autoMode before triggering and applies smart detection for grouped tab handling.
  */
 function scheduleAutoOrganizeDebounced() {
   try {
@@ -837,7 +870,28 @@ function scheduleAutoOrganizeDebounced() {
         }
         isAutoOrganizing = true;
         const algorithm = settings.defaultAlgorithm || "category";
-        await handleOrganizeTabs(algorithm);
+        
+        // Determine whether to include grouped tabs based on setting
+        let includeGrouped = false;
+        const autoModeRecategorizeGrouped = settings.autoModeRecategorizeGrouped || "smart";
+        
+        switch (autoModeRecategorizeGrouped) {
+          case 'always':
+            includeGrouped = true;
+            debugLog("[ATO Background] Auto Mode: Always recategorizing grouped tabs");
+            break;
+          case 'never':
+            includeGrouped = false;
+            debugLog("[ATO Background] Auto Mode: Never recategorizing grouped tabs");
+            break;
+          case 'smart':
+          default:
+            includeGrouped = await hasGenericGroups();
+            debugLog("[ATO Background] Auto Mode: Smart detection -", includeGrouped ? "including" : "excluding", "grouped tabs");
+            break;
+        }
+        
+        await handleOrganizeTabs(algorithm, includeGrouped);
       } catch (err) {
         debugLog("[ATO Background] Debounced auto-organization failed:", err);
       } finally {

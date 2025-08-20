@@ -9,6 +9,9 @@ export class SettingsManager {
     provider: "openai",
     theme: "auto",
 
+    // Auto Mode behavior for grouped tabs
+    autoModeRecategorizeGrouped: "smart", // "smart" | "always" | "never"
+
     // Theming
     uiStyle: "glass", // "glass" | "solid"
     glassPreset: "default-frosted", // "default-frosted" | "aurora-blue" | "mint-glow" | "dark-frost"
@@ -160,6 +163,15 @@ export class SettingsManager {
         validated.provider,
       );
       validated.provider = this.DEFAULTS.provider;
+    }
+
+    // Validate autoModeRecategorizeGrouped setting
+    if (!["smart", "always", "never"].includes(validated.autoModeRecategorizeGrouped)) {
+      console.warn(
+        "[SettingsManager] Invalid autoModeRecategorizeGrouped setting, using default:",
+        validated.autoModeRecategorizeGrouped,
+      );
+      validated.autoModeRecategorizeGrouped = this.DEFAULTS.autoModeRecategorizeGrouped;
     }
 
     // Validate UI style

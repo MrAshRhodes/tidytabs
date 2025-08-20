@@ -39,6 +39,8 @@ const defaultAlgoRadios = Array.from(
 const autoModeToggleSettings = document.getElementById(
   "autoModeToggleSettings",
 );
+const autoModeBehaviorSelect = document.getElementById("autoModeBehaviorSelect");
+const autoModeBehaviorRow = document.getElementById("autoModeBehaviorRow");
 const algoRadios = Array.from(
   document.querySelectorAll('input[name="algorithm"]'),
 );
@@ -53,7 +55,9 @@ const themeToggleIcon = document.getElementById("themeToggleIcon");
 const themeIconSun = document.getElementById("themeIconSun");
 const themeIconMoon = document.getElementById("themeIconMoon");
 
-const defaultBtnLabel = (btn?.textContent || "Organize Tabs Now").trim();
+// Store the original button HTML structure to restore properly
+const originalBtnHTML = btn?.innerHTML || '<span>Organize Tabs Now</span><span class="shortcut-hint">Ctrl+Shift+O</span>';
+const defaultBtnLabel = btn?.querySelector('span')?.textContent?.trim() || "Organize Tabs Now";
 
 // Platform detection for keyboard shortcuts
 function isMac() {
@@ -146,6 +150,7 @@ async function loadSettings() {
       provider: "openai",
       defaultAlgorithm: "category",
       autoMode: false,
+      autoModeRecategorizeGrouped: "smart",
       theme: "auto",
       uiStyle: "glass",
       glassPreset: "default-frosted",
@@ -158,6 +163,7 @@ async function loadSettings() {
       provider: "openai",
       defaultAlgorithm: "category",
       autoMode: false,
+      autoModeRecategorizeGrouped: "smart",
       theme: "auto",
       uiStyle: "glass",
       glassPreset: "default-frosted",
@@ -413,6 +419,16 @@ async function populateSettingsUI() {
     autoModeToggleSettings.checked = !!s.autoMode;
   }
 
+  // Auto mode behavior select
+  if (autoModeBehaviorSelect) {
+    autoModeBehaviorSelect.value = s.autoModeRecategorizeGrouped || "smart";
+  }
+
+  // Show/hide Auto Mode behavior row based on Auto Mode state
+  if (autoModeBehaviorRow) {
+    autoModeBehaviorRow.style.display = s.autoMode ? "" : "none";
+  }
+
   // API key field: check if key exists and show masked placeholder
   if (apiKeyInput) {
     const provider = s.provider || "groq";
@@ -574,7 +590,7 @@ async function organize() {
     if (btn) {
       btn.disabled = false;
       btn.classList.remove("loading");
-      btn.textContent = defaultBtnLabel;
+      btn.innerHTML = originalBtnHTML;
     }
   }
 }
@@ -914,11 +930,23 @@ function bindHandlers() {
   // Auto mode toggle (settings)
   autoModeToggleSettings?.addEventListener("change", async () => {
     const current = await loadSettings();
-    const next = { ...current, autoMode: !!autoModeToggleSettings.checked };
+    const isEnabled = !!autoModeToggleSettings.checked;
+    const next = { ...current, autoMode: isEnabled };
     await saveSettings(next);
     // Sync main toggle
-    if (autoModeToggle)
-      autoModeToggle.checked = !!autoModeToggleSettings.checked;
+    if (autoModeToggle) autoModeToggle.checked = isEnabled;
+    // Show/hide Auto Mode behavior row
+    if (autoModeBehaviorRow) {
+      autoModeBehaviorRow.style.display = isEnabled ? "" : "none";
+    }
+  });
+
+  // Auto mode behavior select change
+  autoModeBehaviorSelect?.addEventListener("change", async () => {
+    const current = await loadSettings();
+    const value = autoModeBehaviorSelect.value || "smart";
+    const next = { ...current, autoModeRecategorizeGrouped: value };
+    await saveSettings(next);
   });
 
   // Theme select change
