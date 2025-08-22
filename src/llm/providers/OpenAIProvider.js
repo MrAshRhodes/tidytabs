@@ -135,18 +135,16 @@ export default class OpenAIProvider {
 
         const body = {
           model: this.model,
-          // Responses API: use instructions + input; request plain JSON via text.format
+          // Responses API: use instructions + input; JSON format enforced by prompt
           instructions: system,
           input: user,
-          text: {
-            format: "json",
-          },
           [tokenParam]: maxTokensForModel(this.model),
         };
-        // Use Responses API with instructions + text.format=json (schema enforced by prompt)
+
+        // Use Responses API with instructions + input (JSON format enforced by prompt)
         safeLog(
           "Responses payload configured:",
-          "instructions+text.format=json",
+          "instructions+input",
           "items=",
           withDomain.length,
         );
@@ -347,6 +345,7 @@ export default class OpenAIProvider {
 
         if (!res.ok) {
           const msg = this._parseOpenAIError(status, data);
+
           safeLog(
             "HTTP error:",
             status,

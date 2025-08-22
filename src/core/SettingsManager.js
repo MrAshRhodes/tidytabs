@@ -166,12 +166,17 @@ export class SettingsManager {
     }
 
     // Validate autoModeRecategorizeGrouped setting
-    if (!["smart", "always", "never"].includes(validated.autoModeRecategorizeGrouped)) {
+    if (
+      !["smart", "always", "never"].includes(
+        validated.autoModeRecategorizeGrouped,
+      )
+    ) {
       console.warn(
         "[SettingsManager] Invalid autoModeRecategorizeGrouped setting, using default:",
         validated.autoModeRecategorizeGrouped,
       );
-      validated.autoModeRecategorizeGrouped = this.DEFAULTS.autoModeRecategorizeGrouped;
+      validated.autoModeRecategorizeGrouped =
+        this.DEFAULTS.autoModeRecategorizeGrouped;
     }
 
     // Validate UI style

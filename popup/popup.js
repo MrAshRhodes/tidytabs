@@ -39,7 +39,9 @@ const defaultAlgoRadios = Array.from(
 const autoModeToggleSettings = document.getElementById(
   "autoModeToggleSettings",
 );
-const autoModeBehaviorSelect = document.getElementById("autoModeBehaviorSelect");
+const autoModeBehaviorSelect = document.getElementById(
+  "autoModeBehaviorSelect",
+);
 const autoModeBehaviorRow = document.getElementById("autoModeBehaviorRow");
 const algoRadios = Array.from(
   document.querySelectorAll('input[name="algorithm"]'),
@@ -56,8 +58,11 @@ const themeIconSun = document.getElementById("themeIconSun");
 const themeIconMoon = document.getElementById("themeIconMoon");
 
 // Store the original button HTML structure to restore properly
-const originalBtnHTML = btn?.innerHTML || '<span>Organize Tabs Now</span><span class="shortcut-hint">Ctrl+Shift+O</span>';
-const defaultBtnLabel = btn?.querySelector('span')?.textContent?.trim() || "Organize Tabs Now";
+const originalBtnHTML =
+  btn?.innerHTML ||
+  '<span>Organize Tabs Now</span><span class="shortcut-hint">Ctrl+Shift+O</span>';
+const defaultBtnLabel =
+  btn?.querySelector("span")?.textContent?.trim() || "Organize Tabs Now";
 
 // Platform detection for keyboard shortcuts
 function isMac() {

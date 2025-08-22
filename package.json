@@ -1,6 +1,6 @@
 {
   "name": "tidytabs",
-  "version": "1.0.26",
+  "version": "1.0.29",
   "private": true,
   "type": "module",
   "scripts": {

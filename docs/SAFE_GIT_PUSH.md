@@ -2,7 +2,7 @@
 
 Context
 
-- Local embedded Groq key is statically imported at [src/llm/providers/GroqProvider.js](src/llm/providers/GroqProvider.js:8) and used in [GroqProvider._ensureKey()](src/llm/providers/GroqProvider.js:145).
+- Local embedded Groq key is statically imported at [src/llm/providers/GroqProvider.js](src/llm/providers/GroqProvider.js:8) and used in [GroqProvider.\_ensureKey()](src/llm/providers/GroqProvider.js:145).
 - Template for local key: [src/llm/providers/GroqKey.example.js](src/llm/providers/GroqKey.example.js:1).
 - Your real local file (git-ignored): [src/llm/providers/GroqKey.js](src/llm/providers/GroqKey.js:1), ignored by [.gitignore](.gitignore:153).
 - Build docs: [README.md](README.md:133).
