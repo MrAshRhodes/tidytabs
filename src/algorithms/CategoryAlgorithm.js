@@ -513,7 +513,7 @@ export class CategoryAlgorithm {
     "uncategorized", // AI should NEVER use this - always pick specific category
     "unknown",
     "tools", // Too generic - be more specific
-    "utilities", // Too generic - use specific categories
+    // "utilities" - REMOVED: Allow but discourage in favor of specific categories
     "resources", // Too generic
     "stuff", // Too generic
     "random", // Too generic
@@ -521,6 +521,11 @@ export class CategoryAlgorithm {
     "mixed", // Too generic
     "temp", // Too generic
     "temporary", // Too generic
+  ]);
+
+  // Categories that should be discouraged but not banned
+  static DISCOURAGED_CATEGORIES = new Set([
+    "utilities", // Prefer Work, Development, Finance, etc. when possible
   ]);
 
   // AI should never assign these - always pick specific category

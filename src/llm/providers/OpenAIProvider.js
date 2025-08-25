@@ -781,121 +781,13 @@ export default class OpenAIProvider {
   }
 
   /**
-   * Simple heuristic-based categorization into indices.
+   * DEPRECATED: Legacy heuristic categorization replaced with strict domain-first approach
+   * @deprecated This method has been removed to ensure consistent categorization across all providers
    * @private
-   * @param {Array<{title?: string, url?: string, domain?: string}>} tabs
-   * @returns {Record<string, number[]>}
    */
   _heuristicCategorize(tabs) {
-    const buckets = Object.create(null);
-
-    function put(name, idx) {
-      if (!buckets[name]) buckets[name] = [];
-      buckets[name].push(idx);
-    }
-
-    tabs.forEach((t, idx) => {
-      const title = (t.title || "").toLowerCase();
-      const url = (t.url || "").toLowerCase();
-      const domain = (t.domain || this._parseDomain(t.url)).toLowerCase();
-
-      // Development / Docs
-      if (
-        domain.includes("github") ||
-        domain.includes("gitlab") ||
-        domain.includes("stack") || // stackoverflow
-        title.includes("mdn") ||
-        domain.includes("mdn") ||
-        title.includes("docs") ||
-        domain.includes("docs")
-      ) {
-        put("Development", idx);
-        return;
-      }
-
-      // Entertainment
-      if (
-        domain.includes("youtube") ||
-        domain.includes("twitch") ||
-        domain.includes("spotify") ||
-        title.includes("music") ||
-        title.includes("video")
-      ) {
-        put("Entertainment", idx);
-        return;
-      }
-
-      // Social
-      if (
-        domain.includes("twitter") ||
-        domain === "x.com" ||
-        domain.includes("facebook") ||
-        domain.includes("instagram") ||
-        domain.includes("reddit") ||
-        domain.includes("linkedin") ||
-        domain.includes("discord")
-      ) {
-        put("Social", idx);
-        return;
-      }
-
-      // Shopping
-      if (
-        domain.includes("amazon") ||
-        domain.includes("ebay") ||
-        domain.includes("etsy") ||
-        domain.includes("shopify") ||
-        url.includes("/cart") ||
-        url.includes("/checkout")
-      ) {
-        put("Shopping", idx);
-        return;
-      }
-
-      // News / Reading
-      if (
-        domain.includes("bbc") ||
-        domain.includes("cnn") ||
-        domain.includes("nytimes") ||
-        domain.includes("reuters") ||
-        domain.includes("medium") ||
-        title.includes("news")
-      ) {
-        put("News", idx);
-        return;
-      }
-
-      // Learning / Research
-      if (
-        domain.includes("wikipedia") ||
-        domain.includes("udemy") ||
-        domain.includes("coursera") ||
-        domain.includes("khanacademy") ||
-        title.includes("tutorial") ||
-        title.includes("guide") ||
-        title.includes("how to")
-      ) {
-        put("Learning", idx);
-        return;
-      }
-
-      // Tools / Work hints
-      if (
-        domain.includes("notion") ||
-        domain.includes("slack") ||
-        domain.includes("teams.microsoft") ||
-        domain.includes("zoom") ||
-        title.includes("dashboard")
-      ) {
-        put("Work", idx);
-        return;
-      }
-
-      // Default
-      put("Research/Reading", idx);
-    });
-
-    return buckets;
+    // Legacy method removed - all providers now use unified strict categorization
+    throw new Error("[OpenAIProvider] _heuristicCategorize deprecated - use unified CategoryAlgorithm validation");
   }
 
   /**

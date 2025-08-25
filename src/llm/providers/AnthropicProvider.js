@@ -347,127 +347,13 @@ export default class AnthropicProvider {
   }
 
   /**
-   * Simple heuristic-based categorization into tab indices.
-   * Slightly different ordering/weights to diversify from OpenAI stub.
+   * DEPRECATED: Legacy heuristic categorization replaced with strict domain-first approach
+   * @deprecated This method has been removed to ensure consistent categorization across all providers
    * @private
-   * @param {Array<{title?: string, url?: string, domain?: string}>} tabs
-   * @returns {Record<string, number[]>}
    */
   _heuristicCategorize(tabs) {
-    const buckets = Object.create(null);
-
-    const put = (name, idx) => {
-      if (!buckets[name]) buckets[name] = [];
-      buckets[name].push(idx);
-    };
-
-    tabs.forEach((t, idx) => {
-      const title = (t.title || "").toLowerCase();
-      const url = (t.url || "").toLowerCase();
-      const domain = (t.domain || this._parseDomain(t.url)).toLowerCase();
-
-      // Work / Tools first (Claude bias toward productivity)
-      if (
-        domain.includes("notion") ||
-        domain.includes("slack") ||
-        domain.includes("asana") ||
-        domain.includes("trello") ||
-        domain.includes("jira") ||
-        title.includes("dashboard") ||
-        title.includes("report")
-      ) {
-        put("Work", idx);
-        return;
-      }
-
-      // Development / Docs
-      if (
-        domain.includes("github") ||
-        domain.includes("gitlab") ||
-        domain.includes("bitbucket") ||
-        domain.includes("stack") ||
-        domain.includes("mdn") ||
-        title.includes("docs") ||
-        title.includes("api reference")
-      ) {
-        put("Development", idx);
-        return;
-      }
-
-      // Research / Learning
-      if (
-        domain.includes("wikipedia") ||
-        domain.includes("scholar.google") ||
-        domain.includes("arxiv") ||
-        title.includes("paper") ||
-        title.includes("theory") ||
-        title.includes("tutorial") ||
-        title.includes("guide") ||
-        title.includes("how to")
-      ) {
-        put("Research", idx);
-        return;
-      }
-
-      // News / Reading
-      if (
-        domain.includes("bbc") ||
-        domain.includes("cnn") ||
-        domain.includes("nytimes") ||
-        domain.includes("reuters") ||
-        domain.includes("medium") ||
-        title.includes("news")
-      ) {
-        put("News", idx);
-        return;
-      }
-
-      // Social
-      if (
-        domain.includes("twitter") ||
-        domain === "x.com" ||
-        domain.includes("facebook") ||
-        domain.includes("instagram") ||
-        domain.includes("reddit") ||
-        domain.includes("linkedin") ||
-        domain.includes("discord")
-      ) {
-        put("Social", idx);
-        return;
-      }
-
-      // Entertainment
-      if (
-        domain.includes("youtube") ||
-        domain.includes("twitch") ||
-        domain.includes("spotify") ||
-        domain.includes("netflix") ||
-        title.includes("trailer") ||
-        title.includes("playlist")
-      ) {
-        put("Entertainment", idx);
-        return;
-      }
-
-      // Shopping
-      if (
-        domain.includes("amazon") ||
-        domain.includes("ebay") ||
-        domain.includes("etsy") ||
-        domain.includes("shopify") ||
-        url.includes("/cart") ||
-        url.includes("/checkout") ||
-        title.includes("review") ||
-        title.includes("deal")
-      ) {
-        put("Shopping", idx);
-        return;
-      }
-
-      put("Research/Reading", idx);
-    });
-
-    return buckets;
+    // Legacy method removed - all providers now use unified strict categorization
+    throw new Error("[AnthropicProvider] _heuristicCategorize deprecated - use unified CategoryAlgorithm validation");
   }
 
   /**
