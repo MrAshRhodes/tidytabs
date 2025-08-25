@@ -1,6 +1,6 @@
 {
   "name": "tidytabs",
-  "version": "1.0.29",
+  "version": "1.0.30",
   "private": true,
   "type": "module",
   "scripts": {
@@ -8,7 +8,10 @@
     "format": "prettier --write .",
     "lint": "eslint . --ext .js",
     "zip": "VERSION=$(grep '\"version\"' manifest.json | cut -d'\"' -f4) && zip -r dist/tidytabs-$VERSION.zip manifest.json icons/icon16.png icons/icon48.png icons/icon128.png popup options src -x \"*/.*\"",
-    "build": "npm run clean && npm run format && npm run zip"
+    "build": "npm run clean && npm run format && npm run zip",
+    "bootstrap": "bash scripts/bootstrap-local.sh",
+    "restore:groqkey:zip": "unzip -p dist/tidytabs-1.0.29.zip src/llm/providers/GroqKey.js > src/llm/providers/GroqKey.js",
+    "restore:backup:zip": "mkdir -p dist/backup-1.0.29 && unzip -o dist/tidytabs-1.0.29.zip -d dist/backup-1.0.29"
   },
   "devDependencies": {
     "eslint": "^9.0.0",

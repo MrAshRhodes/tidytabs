@@ -1,7 +1,7 @@
 {
   "name": "TidyTabs",
   "description": "AI tab organizer. Groups by category, recency, or frequency using OpenAI, Anthropic, or free Groq.",
-  "version": "1.0.29",
+  "version": "1.0.30",
   "manifest_version": 3,
   "action": {
     "default_popup": "popup/popup.html"

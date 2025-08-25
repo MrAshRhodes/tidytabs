@@ -21,7 +21,7 @@ const RATE_LIMIT = {
   requestsPerMinute: 10,
   requestsPerHour: 100,
   requestsPerDay: 500,
-  cooldownMs: 2000, // Minimum time between requests
+  cooldownMs: 6500, // Minimum time between requests (10 req/min = 6+ seconds)
 };
 
 // In-memory usage tracking (resets on extension reload)
@@ -190,11 +190,26 @@ export default class GroqProvider {
       throw new Error("API key configuration error");
     }
 
-    // Check rate limiting
-    const { allowed, reason } = usageTracker.canMakeRequest();
-    if (!allowed) {
-      safeLog("Rate limit exceeded:", reason);
-      throw new Error(`Free tier limit: ${reason}`);
+    // Check rate limiting with auto-wait for temporary limits
+    const rateLimitCheck = usageTracker.canMakeRequest();
+    if (!rateLimitCheck.allowed) {
+      // For minute-based limits, wait and retry instead of failing
+      if (rateLimitCheck.reason.includes("this minute")) {
+        const waitTime = 6500; // Wait 6.5 seconds for next minute window
+        safeLog(`Rate limit hit - waiting ${waitTime}ms before retry:`, rateLimitCheck.reason);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+        
+        // Check again after waiting
+        const retryCheck = usageTracker.canMakeRequest();
+        if (!retryCheck.allowed) {
+          safeLog("Rate limit still exceeded after wait:", retryCheck.reason);
+          throw new Error(`Free tier limit after wait: ${retryCheck.reason}`);
+        }
+      } else {
+        // For hourly/daily limits, fail immediately
+        safeLog("Rate limit exceeded:", rateLimitCheck.reason);
+        throw new Error(`Free tier limit: ${rateLimitCheck.reason}`);
+      }
     }
 
     const url = `${this.baseUrl}/chat/completions`;

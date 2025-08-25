@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Settings validation updated to accept autoModeRecategorizeGrouped ∈ {smart, always, never}.
 - Popup HTML/JS wired to SettingsManager to persist and load the new setting.
 - Background adds hasGenericGroups() helper and integrates includeGrouped selection logic based on the chosen behavior.
+
 ## [1.0.28] - 2025-08-20
 
 ### Added

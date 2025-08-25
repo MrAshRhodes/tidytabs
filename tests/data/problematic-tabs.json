@@ -1,0 +1,245 @@
+{
+  "description": "Comprehensive test dataset with problematic tab examples that currently get miscategorized",
+  "testCases": [
+    {
+      "category": "research_bias_examples",
+      "description": "Tabs that incorrectly get assigned to Research instead of specific categories",
+      "tabs": [
+        {
+          "title": "Wikipedia - JavaScript",
+          "url": "https://en.wikipedia.org/wiki/JavaScript",
+          "domain": "en.wikipedia.org",
+          "expectedCategory": "Utilities",
+          "problematicCategory": "Research",
+          "reason": "Wikipedia should not be Research - it's general reference"
+        },
+        {
+          "title": "MDN Web Docs - Array methods",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array",
+          "domain": "developer.mozilla.org",
+          "expectedCategory": "Development",
+          "problematicCategory": "Research",
+          "reason": "Technical documentation should be Development, not Research"
+        },
+        {
+          "title": "React Documentation - Hooks",
+          "url": "https://reactjs.org/docs/hooks-intro.html",
+          "domain": "reactjs.org",
+          "expectedCategory": "Development",
+          "problematicCategory": "Research",
+          "reason": "Framework docs are Development resources"
+        },
+        {
+          "title": "Stack Overflow - How to center a div",
+          "url": "https://stackoverflow.com/questions/114543/how-to-center-a-div",
+          "domain": "stackoverflow.com",
+          "expectedCategory": "Development",
+          "problematicCategory": "Research",
+          "reason": "Programming Q&A is Development, not Research"
+        },
+        {
+          "title": "Medium - Building a REST API",
+          "url": "https://medium.com/@author/building-rest-api-12345",
+          "domain": "medium.com",
+          "expectedCategory": "Development",
+          "problematicCategory": "Research",
+          "reason": "Technical tutorials on Medium are Development"
+        },
+        {
+          "title": "YouTube - JavaScript Tutorial",
+          "url": "https://www.youtube.com/watch?v=abc123",
+          "domain": "youtube.com",
+          "expectedCategory": "Entertainment",
+          "problematicCategory": "Research",
+          "reason": "YouTube content is Entertainment, even educational videos"
+        }
+      ]
+    },
+    {
+      "category": "entertainment_as_news_examples", 
+      "description": "Entertainment sites incorrectly categorized as News",
+      "tabs": [
+        {
+          "title": "IMDb - Top 250 Movies",
+          "url": "https://www.imdb.com/chart/top/",
+          "domain": "imdb.com",
+          "expectedCategory": "Entertainment",
+          "problematicCategory": "News",
+          "reason": "IMDb is always Entertainment, never News"
+        },
+        {
+          "title": "Rotten Tomatoes - Movie Reviews",
+          "url": "https://www.rottentomatoes.com/m/movie_name",
+          "domain": "rottentomatoes.com",
+          "expectedCategory": "Entertainment",
+          "problematicCategory": "News",
+          "reason": "Movie review sites are Entertainment"
+        },
+        {
+          "title": "Metacritic - Game Reviews",
+          "url": "https://www.metacritic.com/game/pc/game-title",
+          "domain": "metacritic.com",
+          "expectedCategory": "Entertainment",
+          "problematicCategory": "News",
+          "reason": "Entertainment review aggregators are Entertainment"
+        },
+        {
+          "title": "Variety - Hollywood News",
+          "url": "https://variety.com/2023/film/news/movie-news-1234567890/",
+          "domain": "variety.com",
+          "expectedCategory": "Entertainment",
+          "problematicCategory": "News",
+          "reason": "Entertainment industry news is still Entertainment"
+        }
+      ]
+    },
+    {
+      "category": "generic_fallback_examples",
+      "description": "Tabs that get assigned generic categories like Tools, Utilities, Misc",
+      "tabs": [
+        {
+          "title": "Random Blog - Tech Tips",
+          "url": "https://unknown-tech-blog.com/tips",
+          "domain": "unknown-tech-blog.com",
+          "expectedCategory": "Uncategorized",
+          "problematicCategory": "Tools",
+          "reason": "Unknown domains should be Uncategorized, not generic Tools"
+        },
+        {
+          "title": "Personal Website - Portfolio",
+          "url": "https://johnsmith.dev/portfolio",
+          "domain": "johnsmith.dev",
+          "expectedCategory": "Uncategorized",
+          "problematicCategory": "Utilities",
+          "reason": "Personal sites without clear category should be Uncategorized"
+        },
+        {
+          "title": "Company Internal Tool",
+          "url": "https://internal.companyname.com/dashboard",
+          "domain": "internal.companyname.com",
+          "expectedCategory": "Uncategorized",
+          "problematicCategory": "Misc",
+          "reason": "Unknown internal tools should be Uncategorized, not Misc"
+        }
+      ]
+    },
+    {
+      "category": "domain_authority_examples",
+      "description": "Tabs where domain should override AI categorization",
+      "tabs": [
+        {
+          "title": "GitHub - News and Updates",
+          "url": "https://github.com/blog/news-update",
+          "domain": "github.com", 
+          "expectedCategory": "Development",
+          "problematicCategory": "News",
+          "reason": "GitHub domain authority should override title suggesting News"
+        },
+        {
+          "title": "Gmail - Newsletter Signup",
+          "url": "https://mail.google.com/mail/u/0/#inbox/newsletter",
+          "domain": "mail.google.com",
+          "expectedCategory": "Email",
+          "problematicCategory": "News",
+          "reason": "Gmail domain authority should override newsletter content"
+        },
+        {
+          "title": "Netflix - Documentary About Science",
+          "url": "https://www.netflix.com/title/science-documentary",
+          "domain": "netflix.com",
+          "expectedCategory": "Entertainment",
+          "problematicCategory": "Research",
+          "reason": "Netflix domain should override documentary subject matter"
+        },
+        {
+          "title": "Amazon - Research Papers Book",
+          "url": "https://www.amazon.com/dp/research-papers-book",
+          "domain": "amazon.com",
+          "expectedCategory": "Shopping",
+          "problematicCategory": "Research",
+          "reason": "Amazon domain indicates Shopping, regardless of product type"
+        }
+      ]
+    },
+    {
+      "category": "confidence_scoring_examples",
+      "description": "Examples for testing confidence scoring based on domain/title match strength",
+      "tabs": [
+        {
+          "title": "GitHub - microsoft/vscode",
+          "url": "https://github.com/microsoft/vscode",
+          "domain": "github.com",
+          "expectedCategory": "Development",
+          "expectedConfidence": 0.98,
+          "reason": "Exact domain match should have very high confidence"
+        },
+        {
+          "title": "docs.github.com - API Reference",
+          "url": "https://docs.github.com/en/rest/reference",
+          "domain": "docs.github.com",
+          "expectedCategory": "Development", 
+          "expectedConfidence": 0.94,
+          "reason": "Subdomain match should have high confidence"
+        },
+        {
+          "title": "Random Site - GitHub Tutorial",
+          "url": "https://randomsite.com/github-tutorial",
+          "domain": "randomsite.com",
+          "expectedCategory": "Development",
+          "expectedConfidence": 0.75,
+          "reason": "Title pattern match should have medium confidence"
+        },
+        {
+          "title": "Unknown Site - Random Content",
+          "url": "https://unknown.com/random-page",
+          "domain": "unknown.com",
+          "expectedCategory": "Uncategorized",
+          "expectedConfidence": 0.35,
+          "reason": "No domain or title signals should have low confidence"
+        }
+      ]
+    },
+    {
+      "category": "edge_cases",
+      "description": "Edge cases and boundary conditions for validation",
+      "tabs": [
+        {
+          "title": "",
+          "url": "https://example.com",
+          "domain": "example.com",
+          "expectedCategory": "Uncategorized",
+          "reason": "Empty title should not cause errors"
+        },
+        {
+          "title": "Valid Title",
+          "url": "",
+          "domain": "",
+          "expectedCategory": "Uncategorized", 
+          "reason": "Empty URL/domain should not cause errors"
+        },
+        {
+          "title": "Research Paper: Machine Learning",
+          "url": "https://arxiv.org/abs/2023.12345",
+          "domain": "arxiv.org",
+          "expectedCategory": "Research",
+          "reason": "Genuine academic content should be allowed as Research"
+        },
+        {
+          "title": "How to Research Markets",
+          "url": "https://business-blog.com/market-research",
+          "domain": "business-blog.com",
+          "expectedCategory": "Uncategorized",
+          "problematicCategory": "Research",
+          "reason": "Non-academic research content should not use Research category"
+        },
+        {
+          "title": "Gmail",
+          "url": "chrome-extension://abc123/gmail",
+          "domain": "",
+          "expectedCategory": "Uncategorized",
+          "reason": "Chrome extension URLs should be handled gracefully"
+        }
+      ]
+    }
+  ]
+}

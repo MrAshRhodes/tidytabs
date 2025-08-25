@@ -10,7 +10,43 @@ import { CanonicalCategories, DomainHints } from "../constants/categories.js";
 export { CanonicalCategories, DomainHints };
 
 /**
- * Build strict system + user messages for categorization with:
+ * Domain-first validation for tab categorization
+ * Checks if a domain has explicit categorization guidance before AI processing
+ * @param {string} domain - Domain to validate
+ * @param {string} title - Tab title for additional context
+ * @returns {{ hasStrongDomainSignal: boolean, category?: string, confidence?: number }}
+ */
+export function validateDomainFirst(domain, title = "") {
+  if (!domain) return { hasStrongDomainSignal: false };
+
+  // Check for exact domain match in DomainHints
+  const domainCategory = DomainHints[domain];
+  if (domainCategory) {
+    return {
+      hasStrongDomainSignal: true,
+      category: domainCategory,
+      confidence: 0.95,
+      source: "domain_exact_match"
+    };
+  }
+
+  // Check for subdomain patterns
+  for (const [knownDomain, category] of Object.entries(DomainHints)) {
+    if (domain.endsWith(`.${knownDomain}`) || domain.includes(knownDomain)) {
+      return {
+        hasStrongDomainSignal: true,
+        category,
+        confidence: 0.9,
+        source: "domain_pattern_match"
+      };
+    }
+  }
+
+  return { hasStrongDomainSignal: false };
+}
+
+/**
+ * Build strict domain-first system + user messages for categorization with:
  * - Controlled taxonomy (CanonicalCategories)
  * - Domain hints (DomainHints) to bias results
  * - Few-shot examples for consistent categorization
@@ -112,33 +148,61 @@ Output (schema only, no prose):
 `.trim();
 
   const systemParts = [
-    "You are a STRICT browser tab classifier.",
-    `Allowed categories (use ONLY these, exactly as written): ${taxonomy}`,
+    "You are a ZERO-TOLERANCE browser tab classifier with STRICT domain-first categorization rules.",
+    `ALLOWED CATEGORIES (use ONLY these, exactly as written): ${taxonomy}`,
+    "",
+    "MANDATORY CATEGORIZATION PROTOCOL - NO EXCEPTIONS:",
+    "1. ANALYZE domain for explicit category signals",
+    "2. ANALYZE title for clear category indicators",
+    "3. PICK the most specific category that fits the content",
+    "4. YOU MUST ASSIGN A SPECIFIC CATEGORY - domain + title provides enough information",
+    "5. NEVER assign Uncategorized - always choose the closest specific category",
+    "",
   ];
 
   // Add user-created categories section if there are custom categories
   if (customCategoryDescriptions.length > 0) {
-    systemParts.push("User-created categories:");
+    systemParts.push("USER-CREATED CATEGORIES:");
     systemParts.push(...customCategoryDescriptions);
+    systemParts.push("");
   }
 
   systemParts.push(
-    "Rules:",
-    "- Produce exactly one assignment per input item.",
-    '- The "key" in each assignment MUST match exactly one input "key" value.',
-    '- The "category" MUST be one of the Allowed categories; do NOT invent new labels.',
-    '- Choose the most intuitive, single, concise category (1-3 words). Do not include slashes ("/") or hierarchical names.',
-    '- Avoid generic categories like "Other", "Misc", "General", "Uncategorized", or "Unknown".',
-    "- CRITICAL: IMDb, Rotten Tomatoes, Metacritic are ALWAYS Entertainment, NEVER News.",
-    "- Movie/TV/music sites are Entertainment, not News, even if they have articles.",
-    "- EXTREMELY IMPORTANT: DO NOT USE 'Research' unless the content is SPECIFICALLY academic papers, peer-reviewed journals, or scholarly publications.",
-    "- Wikipedia, documentation sites, tutorials, how-to guides, general information sites should be categorized as Work, Development, News, or Utilities - NOT Research.",
-    "- Only use 'Research' for genuine academic/scholarly content from universities, research institutions, or scientific journals.",
-    "- When user-created categories are available, consider them equally with built-in categories.",
-    "- Return STRICT JSON only, no prose, no markdown, no code fences.",
-    'Schema (exact): {"assignments":[{"key":"K","category":"string","confidence":0..1}]}.',
-    "Guidance (do NOT echo below lines in output):",
+    "STRICT CATEGORIZATION RULES:",
+    "- Produce exactly one assignment per input item",
+    '- The "key" in each assignment MUST match exactly one input "key" value',
+    '- The "category" MUST be one of the ALLOWED categories; do NOT invent new labels',
+    "- Choose the most specific category based on domain knowledge",
+    "- Do not include slashes (\"/\") or hierarchical names",
+    "",
+    "ABSOLUTELY FORBIDDEN CATEGORIES:",
+    '- NEVER EVER use: "Research", "Misc", "Other", "General", "Uncategorized", "Unknown", "Tools", "Utilities"',
+    "- ALWAYS choose from: Email, Work, Development, Shopping, Entertainment, Social, News, Finance, Travel, AI",
+    "- For unclear cases: Work (general productivity), Development (technical), or Utilities (tools/services)",
+    "",
+    "DOMAIN-SPECIFIC CRITICAL RULES:",
+    "- IMDb, Rotten Tomatoes, Metacritic are ALWAYS Entertainment, NEVER News",
+    "- Movie/TV/music sites are Entertainment, not News, even if they have articles",
+    "- GitHub, GitLab, StackOverflow are ALWAYS Development",
+    "- Gmail, Outlook, Slack, Teams, Discord are ALWAYS Email",
+    "- Documentation sites, tutorials, how-to guides are Development or Work - NOT Research",
+    "- Wikipedia is Utilities - NOT Research",
+    "- Only use academic journals, peer-reviewed papers for Research",
+    "",
+    "CONFIDENCE SCORING:",
+    "- Domain exact match = 0.9-0.95 confidence",
+    "- Domain + title match = 0.95+ confidence",
+    "- Title-only inference = 0.7-0.8 confidence",
+    "- Uncertain assignment = 0.3-0.5 confidence",
+    "",
+    "RESPONSE FORMAT:",
+    "- Return STRICT JSON only, no prose, no markdown, no code fences",
+    '- Schema (exact): {"assignments":[{"key":"K","category":"string","confidence":0..1}]}',
+    "",
+    "DOMAIN GUIDANCE (use these mappings as authoritative):",
     hintLines,
+    "",
+    "EXAMPLES (for reference only):",
     fewShot,
   );
 
@@ -168,45 +232,47 @@ export async function getAllAllowedCategories() {
 }
 
 /**
- * Main tab categorization prompt with clear instructions and examples
+ * Strict domain-first categorization prompt - eliminates all generic categories
  */
-export const TabCategorizationPrompt = `You are a browser tab organization assistant. Your task is to analyze the provided browser tabs and categorize them into logical groups based on their content, purpose, and domain.
+export const StrictDomainFirstPrompt = `You are a ZERO-TOLERANCE browser tab classifier. Categorize tabs using DOMAIN-FIRST analysis with absolute precision.
 
-GUIDELINES:
-1. Create 3-7 categories based on content similarity and user intent
-2. Use clear, descriptive category names that users will understand
-3. Consider both the domain and page title when categorizing
-4. Group related tabs even if from different domains (e.g., all documentation sites)
-5. Each tab should belong to exactly one category
+DOMAIN-FIRST PROTOCOL:
+1. Analyze domain for exact categorization signals
+2. Use title only to confirm domain-based decision
+3. Apply STRICT category mapping - NO GUESSING ALLOWED
+4. If uncertain, assign 'Uncategorized' - DO NOT use generic categories
 
-SUGGESTED CATEGORIES (use when appropriate):
-- Work: Professional tasks, work tools, company resources
-- Development: Coding, GitHub, StackOverflow, documentation
-- Research: Academic papers, scientific studies, scholarly journals (not general Wikipedia or documentation)
-- Entertainment: YouTube, streaming, games, fun content
-- Social: Social media, messaging, community forums
-- Shopping: E-commerce, product reviews, wishlists
-- News: News sites, current events, blogs
-- Learning: Online courses, tutorials, educational content
-- Finance: Banking, investments, budgeting tools
-- Tools: Utilities, productivity apps, converters
+FORBIDDEN CATEGORIES:
+- Research (unless academic journals/papers)
+- Misc, Other, General, Unknown
+- Tools, Utilities (be more specific)
+
+MANDATORY DOMAIN MAPPINGS:
+- github.com, gitlab.com, stackoverflow.com → Development
+- gmail.com, outlook.com, slack.com → Email
+- youtube.com, netflix.com, spotify.com → Entertainment
+- amazon.com, ebay.com → Shopping
+- nytimes.com, bbc.com → News
+- linkedin.com, twitter.com → Social
 
 RESPONSE FORMAT:
-Return ONLY valid JSON in this exact format:
+Return ONLY valid JSON:
 {
   "categories": {
     "CategoryName1": [0, 2, 5],
-    "CategoryName2": [1, 3, 4],
-    "CategoryName3": [6, 7]
+    "CategoryName2": [1, 3, 4]
   },
   "confidence": 0.85,
-  "reasoning": "Brief explanation of categorization logic"
+  "reasoning": "Domain-based categorization logic"
 }
-
-The numbers in arrays are the indices of tabs in the provided list (0-based).
 
 TABS TO CATEGORIZE:
 {tabs}`;
+
+/**
+ * Main tab categorization prompt - now uses strict domain-first approach
+ */
+export const TabCategorizationPrompt = StrictDomainFirstPrompt;
 
 /**
  * Work-focused categorization prompt for professional environments
@@ -445,17 +511,117 @@ export function validateCategorizationResponse(response) {
 }
 
 /**
- * Prompt versioning for A/B testing
+ * Multiple strict prompt variations to prevent AI repetition
+ */
+export const STRICT_PROMPT_VARIATIONS = {
+  domain_first: `You are a STRICT tab classifier. Use DOMAIN KNOWLEDGE FIRST for categorization.
+
+PROTOCOL: Domain → Title → Category (NO GUESSING)
+
+CRITICAL MAPPINGS:
+- github.com/gitlab.com → Development
+- gmail.com/outlook.com → Email
+- youtube.com/netflix.com → Entertainment
+- amazon.com/ebay.com → Shopping
+
+FORBIDDEN: Research, Misc, Other, Tools, Unknown
+
+Format: {"categories": {"CategoryName": [indices]}, "confidence": 0.85}
+TABS: {tabs}`,
+
+  precision_mode: `PRECISION CATEGORIZATION: Zero tolerance for generic labels.
+
+RULES:
+1. Domain signals override title ambiguity
+2. Specific categories ONLY - no broad generalizations
+3. Uncertain? Use 'Uncategorized' not generic labels
+
+BANNED CATEGORIES: Research, Misc, Other, General, Tools
+
+Domain Authorities:
+- Code sites → Development
+- Email services → Email
+- Streaming → Entertainment
+- Stores → Shopping
+
+JSON Only: {"categories": {"Name": [0,1,2]}, "confidence": 0.9}
+TABS: {tabs}`,
+
+  explicit_mapping: `EXPLICIT DOMAIN MAPPING for tab categorization.
+
+METHOD: Check domain first, title second, assign specific category.
+
+DOMAIN RULES:
+- Entertainment: youtube.com, netflix.com, spotify.com, imdb.com
+- Development: github.com, stackoverflow.com, gitlab.com
+- Email: gmail.com, outlook.com, slack.com, discord.com
+- Shopping: amazon.com, ebay.com, etsy.com
+- News: nytimes.com, bbc.com, cnn.com
+- Social: linkedin.com, twitter.com, facebook.com
+
+NO GENERIC FALLBACKS - Be specific or use 'Uncategorized'
+
+Response: {"categories": {"Category": [indices]}, "confidence": 0.8}
+TABS: {tabs}`
+};
+
+/**
+ * Select a prompt variation to prevent AI repetition
+ * @param {string|number} seed - Seed for consistent variation selection
+ * @returns {string} Selected prompt template
+ */
+export function selectPromptVariation(seed = Date.now()) {
+  const variations = Object.values(STRICT_PROMPT_VARIATIONS);
+  const index = Math.abs(seed) % variations.length;
+  return variations[index];
+}
+
+/**
+ * Enhanced prompt versioning with strict variations
  */
 export const PROMPT_VERSIONS = {
-  v1: TabCategorizationPrompt,
-  v2_concise: TabCategorizationPrompt.replace(
-    /GUIDELINES:[\s\S]*?SUGGESTED CATEGORIES/,
-    "TASK: Group tabs into 3-7 logical categories.\n\nCOMMON CATEGORIES",
-  ),
-  v3_detailed:
-    TabCategorizationPrompt +
-    "\n\nProvide detailed reasoning for each categorization decision.",
+  v1: StrictDomainFirstPrompt,
+  v2_domain_first: STRICT_PROMPT_VARIATIONS.domain_first,
+  v3_precision: STRICT_PROMPT_VARIATIONS.precision_mode,
+  v4_explicit: STRICT_PROMPT_VARIATIONS.explicit_mapping,
+  // Legacy version (deprecated)
+  legacy_permissive: `You are a browser tab organization assistant. Your task is to analyze the provided browser tabs and categorize them into logical groups based on their content, purpose, and domain.
+
+GUIDELINES:
+1. Create 3-7 categories based on content similarity and user intent
+2. Use clear, descriptive category names that users will understand
+3. Consider both the domain and page title when categorizing
+4. Group related tabs even if from different domains (e.g., all documentation sites)
+5. Each tab should belong to exactly one category
+
+SUGGESTED CATEGORIES (use when appropriate):
+- Work: Professional tasks, work tools, company resources
+- Development: Coding, GitHub, StackOverflow, documentation
+- Research: Academic papers, scientific studies, scholarly journals (not general Wikipedia or documentation)
+- Entertainment: YouTube, streaming, games, fun content
+- Social: Social media, messaging, community forums
+- Shopping: E-commerce, product reviews, wishlists
+- News: News sites, current events, blogs
+- Learning: Online courses, tutorials, educational content
+- Finance: Banking, investments, budgeting tools
+- Tools: Utilities, productivity apps, converters
+
+RESPONSE FORMAT:
+Return ONLY valid JSON in this exact format:
+{
+  "categories": {
+    "CategoryName1": [0, 2, 5],
+    "CategoryName2": [1, 3, 4],
+    "CategoryName3": [6, 7]
+  },
+  "confidence": 0.85,
+  "reasoning": "Brief explanation of categorization logic"
+}
+
+The numbers in arrays are the indices of tabs in the provided list (0-based).
+
+TABS TO CATEGORIZE:
+{tabs}`,
 };
 
 /**
